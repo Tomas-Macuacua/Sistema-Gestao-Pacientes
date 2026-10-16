@@ -1,8 +1,8 @@
 package com.pacientes.app;
 
 import com.pacientes.controller.PacienteController;
+import com.pacientes.enums.Sexo;
 import com.pacientes.model.Paciente;
-
 import java.time.LocalDate;
 
 public class Main {
@@ -15,14 +15,17 @@ public class Main {
         Paciente paciente = new Paciente(
                 "João Manuel",
                 LocalDate.of(2000, 5, 10),
-                "Masculino",
+                Sexo.MASCULINO,
                 "841234567",
-                "Maputo"
+                "Maputo",
+                "P-" + System.currentTimeMillis()
         );
 
         controller.cadastrar(paciente);
 
-        System.out.println("Paciente cadastrado!");
+        for (Paciente p : controller.listar()){
+            System.out.println(p + " | " + p.getIdade() + " anos | " + p.getNumeroProcesso());
+        }
 
     }
 }

@@ -4,88 +4,42 @@
  */
 package com.pacientes.model;
 
+import com.pacientes.enums.Sexo;
 import jakarta.persistence.*;
-
-
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "pacientes")
-public class Paciente {
+public class Paciente extends Pessoa {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
-    private String nome;
-
-    private LocalDate data_nascimento;
-
-    private String sexo;
-
-    private String telefone;
-
-    private String endereco;
-
-    public Paciente() {
+    @Column (name = "numero_processo", nullable = false, unique = true, length = 30)
+    private String numeroProcesso;
+    
+    @Column(name = "grupo_sanguineo", length = 3)
+    private String grupoSanguineo;
+    
+    @Column(length = 255)
+    private String alergias;
+    
+    
+    public Paciente(){}
+    
+    public Paciente(String nome, LocalDate dataNascimento, Sexo sexo, String telefone, String endereco, String numeroProcesso){
+        super(nome, dataNascimento, sexo, telefone, endereco);
+        this.numeroProcesso = numeroProcesso;
     }
-
-    public Paciente(String nome, LocalDate data_nascimento,
-                     String sexo, String telefone, String endereco) {
-
-        this.nome = nome;
-        this.data_nascimento = data_nascimento;
-        this.sexo = sexo;
-        this.telefone = telefone;
-        this.endereco = endereco;
+    
+    @Override
+    public String getTipo(){
+        return "Paciente";
     }
+    
+    public String getNumeroProcesso() { return numeroProcesso; }
+    public void setNumeroProcesso(String numeroProcesso) { this.numeroProcesso = numeroProcesso; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getGrupoSanguineo() { return grupoSanguineo; }
+    public void setGrupoSanguineo(String grupoSanguineo) { this.grupoSanguineo = grupoSanguineo; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public LocalDate getDataNascimento() {
-        return data_nascimento;
-    }
-
-    public void setDataNascimento(LocalDate data_nascimento) {
-        this.data_nascimento = data_nascimento;
-    }
-
-    public String getSexo() {
-        return sexo;
-    }
-
-    public void setSexo(String sexo) {
-        this.sexo = sexo;
-    }
-
-    public String getTelefone() {
-        return telefone;
-    }
-
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
-    }
-
-    public String getEndereco() {
-        return endereco;
-    }
-
-    public void setEndereco(String endereco) {
-        this.endereco = endereco;
-    }
+    public String getAlergias() { return alergias; }
+    public void setAlergias(String alergias) { this.alergias = alergias; }
 }

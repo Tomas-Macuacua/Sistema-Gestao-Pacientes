@@ -45,7 +45,11 @@
         </property>
 
         <!-- Entidade -->
+        <mapping class="com.pacientes.model.Pessoa"/>
         <mapping class="com.pacientes.model.Paciente"/>
+        <mapping class="com.pacientes.model.Medico"/>
+        <mapping class="com.pacientes.model.Utilizador"/>
+        <mapping class="com.pacientes.model.Consulta"/>
 
     </session-factory>
 
