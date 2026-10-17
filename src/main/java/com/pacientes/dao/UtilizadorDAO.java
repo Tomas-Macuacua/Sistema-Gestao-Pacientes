@@ -25,4 +25,10 @@ public class UtilizadorDAO extends GenericDAO<Utilizador> implements IUtilizador
                 username
         );
     }
+    
+    @Override
+    public Optional<Utilizador> buscarPorMedico(Long medicoId){
+        return consultarUnico(
+            "FROM Utilizador u WHERE u.medico.id = ?1", medicoId);
+    }
 }

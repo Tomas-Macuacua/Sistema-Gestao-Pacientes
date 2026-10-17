@@ -9,6 +9,7 @@ import com.pacientes.dao.PessoaDAO;
 import com.pacientes.enums.Perfil;
 import com.pacientes.enums.Sexo;
 import com.pacientes.exception.DAOException;
+import com.pacientes.exception.SistemaException;
 import com.pacientes.model.Consulta;
 import com.pacientes.model.Descritivel;
 import com.pacientes.model.Medico;
@@ -28,111 +29,69 @@ public class Main {
     public static void main(String[] args) {
         
         long agora = System.currentTimeMillis();
-        
-        // Gravar um paciente e um médico
         PacienteController pacientes = new PacienteController();
         MedicoController medicos = new MedicoController();
-        UtilizadorController utilizadores = new UtilizadorController();
         ConsultaController consultas = new ConsultaController();
-        //MedicoDAO medicoDAO = new MedicoDAO();
         
-        // =========== CREATE ============
-        System.out.println("=== CREATE ===");
-        Paciente paciente = new Paciente(
-                "Jão Manuel",
-                LocalDate.of(2000, 5, 10),
-                Sexo.MASCULINO,
-                "841234567",
-                "Maputo",
-                "P-" + agora
-        );
-        paciente.setGrupoSanguineo("O+");
-        pacientes.cadastrar(paciente);
+        LocalDateTime amanha9h = LocalDate.now().plusDays(1).atTime(9, 0);
         
-        Medico medico = new Medico(
-                "Ana Machava",
-                LocalDate.of(1985, 3, 22),
-                Sexo.FEMENINO,
-                "84241798",
-                "Matola",
-                "Clínica Geral",
-                "OM-" + agora
-        );
-        medicos.cadastrar(medico);
+        // ============== Validações ==============
         
-        Utilizador utilizador = new Utilizador("Ana" + agora, "hash-provisorio", Perfil.MEDICO);
-        utilizador.setMedico(medico);
-        utilizadores.cadastrar(utilizador);
+        System.out.println("=== VALIDAÇÕES ===");
+        Paciente invalido = new Paciente("A1", null, null, "123", "Maputo", " ");
+        tentar("Paciente com dados invalidos", () -> pacientes.cadastrar(invalido));
         
-        Consulta consulta = new Consulta(
-                paciente,
-                medico,
-                LocalDateTime.now().plusDays(1),
-                "Dor de cabeça"
-        );
-        consultas.cadastrar(consulta);
+        Paciente paciente = new Paciente("João Manuel", LocalDate.of(2000, 5, 10),
+                Sexo.MASCULINO, "84 123 4567", "Maputo", "P-"+agora);
+        tentar("Paciente, válido", () -> pacientes.cadastrar(paciente));
         
-        System.out.println("Criaddos: paciente id=" + paciente.getId()
-                + ", médico id=" + medico.getId()
-                + ", utilizador id=" + utilizador.getId()
-                + ", consulta id=" + consulta.getId()
-        );
+        Paciente duplicado = new Paciente("Maria José", LocalDate.of(1995, 1, 2),
+                Sexo.FEMENINO, "861234567", "Matola", paciente.getNumeroProcesso());
+        tentar("Mesmo número de processo", () -> pacientes.cadastrar(duplicado));
         
-        // =========== READ ============
-        System.out.println("\n=== READ ===");
-        Paciente lido = pacientes.buscar(paciente.getId());
-        System.out.println(lido.getResumo());
+        Medico medico = new Medico("Ana Machava", LocalDate.of(1985, 3, 22),
+                Sexo.FEMENINO, "872345679", "Matola", "Clínica Geral", "OM-" + agora);
+        tentar("Médico válido", () -> medicos.cadastrar(medico));
         
-        // =========== UPADTE ============
-        System.out.println("\n=== UPDATE ===");
-        lido.setTelefone("839999999");
-        pacientes.atualizar(lido);
-        System.out.println("Novo telefone: " + pacientes.buscar(paciente.getId()));
         
-        // =========== PESQUISAS ============
-        System.out.println("\n=== PESQUISAS ===");
-        System.out.println("Pacientes com 'joão': " + pacientes.pesquisarPorNome("joão").size());
-        System.out.println("Médicos de 'clínica:' " + medicos.listarPorEspeialidade("clínica"));
-        utilizadores.buscarPorUsername(utilizador.getUsername())
-                .ifPresent(u -> System.out.println("Login encontrdo: " + u.getResumo()));
+        // ---------- Regras de negócio ----------
+        System.out.println("\n=== REGRAS DE NEGÓCIO ===");
+        Consulta c1 = new Consulta(paciente, medico, amanha9h, "Dor de cabeça");
+        tentar("Agendar 09:00", () -> consultas.agendar(c1));
+        
+        Consulta c2 = new Consulta(paciente, medico, amanha9h.plusMinutes(15), "Febre");
+        tentar("Agendar 09:15 (sobrepõe)", () -> consultas.agendar(c2));
+        
+        Consulta c3 = new Consulta(paciente, medico, amanha9h.plusMinutes(30), "Febre");
+        tentar("Agendar 09:30 (livre)", () -> consultas.agendar(c3));
+                
+         Consulta passada = new Consulta(paciente, medico, LocalDateTime.now().minusDays(1), "Tosse");
+        tentar("Agendar no passado", () -> consultas.agendar(passada));
+        
+        tentar("Realizar sem diagnóstico", () -> consultas.realizar(c1.getId(), "  "));
+        tentar("Realizar com diagnóstico", () -> consultas.realizar(c1.getId(), "Enxaqueca ligeira"));
+        tentar("Cancelar consulta já realizada", () -> consultas.cancelar(c1.getId()));
+        tentar("Cancelar consulta agendada (09:30)", () -> consultas.cancelar(c3.getId()));
+        tentar("Eliminar paciente com consultas", () -> pacientes.eliminar(paciente.getId()));
+        tentar("Eliminar médico com consultas", () -> medicos.eliminar(medico.getId()));
+        
+        // ---------- Limpeza ----------
+        System.out.println("\n=== LIMPEZA ===");
         consultas.listarPorPaciente(paciente.getId())
-                .forEach(c -> System.out.println(c.getResumo()));
-        
-        //=========== DELETE ============
-        System.out.println("\n=== DELETE ===");
-        try{
-            pacientes.eliminar(paciente.getId());
-            System.out.println("(não deveria chegar aqui)");
-        }catch(DAOException e){
-            System.out.println("Bloqueado, como esperado: o paciente tem consultas. "
-                    + e.getMessage()
-            );
+                .forEach(c -> consultas.eliminar(c.getId()));
+        tentar("Eliminar paciente (já sem consultas)", () -> pacientes.eliminar(paciente.getId()));
+        tentar("Eliminar médico (já sem consultas)", () -> medicos.eliminar(medico.getId()));
+    
+    }
+    
+    /** Executa a acção e mostra se passou ou foi bloqueada pelo sistema. */
+    private static void tentar(String titulo, Runnable acao) {
+        try {
+            acao.run();
+            System.out.println("[OK]        " + titulo);
+        } catch (SistemaException e) {
+            System.out.println("[BLOQUEADO] " + titulo + " -> "
+                    + e.getMessage().replace("\n", " | "));
         }
-        
-        // Ordem correcta: Preimiro quem depnde, depois quem é referencido
-        consultas.eliminar(consulta.getId());
-        utilizadores.eliminar(utilizador.getId());
-        pacientes.eliminar(paciente.getId());
-        medicos.eliminar(medico.getId());
-        
-        System.out.println("Paciente depois de eliminado: " + pacientes.buscar((paciente.getId())));
-        
-        /*
-        // Polimorfismo por heranca: uma lista de Pessoa
-        System.out.println("=== Pessoas ===");
-        List<Pessoa> pessoas = new PessoaDAO().listarTodos();
-        for (Pessoa p : pessoas){
-            System.out.println(p.getTipo() + " -> " + p.getResumo());
-        }
-        
-        // Polimorfismo por interface: classes sem relacao entre si
-        System.out.println("\n=== Descritivel ===");
-        List<Descritivel> itens = new ArrayList<>(pessoas);
-        itens.add(new Consulta(paciente, medico, LocalDateTime.now().plusDays(1), "Dor de cabeça"));
-        itens.add(new Utilizador("admin", "hash-provisorio", Perfil.ADMIN));
-        for (Descritivel d : itens) {
-            System.out.println(d.getResumo());
-        }
-        */
     }
 }

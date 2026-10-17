@@ -11,10 +11,8 @@ package com.pacientes.exception;
 
 /**
  * Erro ocorrido na camada de acesso aos dados (Hibernate/MySQL).
- * É "unchecked" (RuntimeException) para não poluir todas as assinaturas
- * de métodos com "throws".
  */
-public class DAOException extends RuntimeException{
+public class DAOException extends SistemaException{
     
     public DAOException(String mensagem, Throwable causa){
         super(mensagem, causa);

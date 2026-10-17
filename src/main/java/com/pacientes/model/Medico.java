@@ -32,7 +32,7 @@ public class Medico extends Pessoa {
     
     @Override
     public String getTipo(){
-        return "Medico";
+        return "Médico";
     }
     
     @Override

@@ -13,6 +13,7 @@ import org.hibernate.query.Query;
 import java.util.Optional;
 import java.util.List;
 import java.util.function.Consumer;
+import org.hibernate.exception.ConstraintViolationException;
 
 /**
  *
@@ -113,29 +114,42 @@ public abstract class GenericDAO<T> implements IGenericDAO<T, Long> {
     }
     
     /**
-     * Abre sessão, inicializa transacção, executa a operação, faz commit.
-     * Se algo falhar faz rollback e lança DAOException.
+     * Abre sessão, inicia transacção, executa a operação, faz commit.
+     * Se algo falhar faz rollback (com a sessão ainda aberta) e lança DAOException.
      */
-    protected void executarEmTransacao(Consumer<Session> operacao){
-        Transaction transaction = null;
-        
-        try(Session session = HibernateUtil.getSessionFactory().openSession()){
-            transaction = session.beginTransaction();
-            
-            try{
+    protected void executarEmTransacao(Consumer<Session> operacao) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+
+            Transaction transaction = session.beginTransaction();
+
+            try {
                 operacao.accept(session);
-                transaction.commit();                
-            }catch(RuntimeException e){
-                if(transaction.isActive()){
+                transaction.commit();
+            } catch (RuntimeException e) {
+                // O rollback tem de acontecer AQUI, antes da sessão fechar
+                if (transaction.isActive()) {
                     transaction.rollback();
                 }
                 throw e;
             }
 
-        }catch(Exception e){
+        } catch (Exception e) {
+            if (violouRestricao(e)) {
+                throw new DAOException("Operação rejeitada: o registo já existe "
+                        + "ou está a ser usado por outros dados.", e);
+            }
             throw new DAOException("Erro ao gravar " + classe.getSimpleName(), e);
         }
-            
+    }
+    
+    /** Percorre a cadeia de causas à procura de uma violação de restrição da BD. */
+    private static boolean violouRestricao(Throwable erro) {
+        for (Throwable t = erro; t != null; t = t.getCause()) {
+            if (t instanceof ConstraintViolationException) {
+                return true;
+            }
+        }
+        return false;
     }
     
 }

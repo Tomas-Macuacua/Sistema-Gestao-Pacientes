@@ -14,4 +14,6 @@ import java.util.Optional;
 public interface IUtilizadorDAO extends IGenericDAO<Utilizador, Long>{
     
     Optional<Utilizador> buscarPorUsername(String username);
+    
+    Optional<Utilizador> buscarPorMedico (Long id);
 }

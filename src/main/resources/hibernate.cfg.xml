@@ -39,7 +39,7 @@
             true
         </property>
 
-        <!-- Validar a estrutura da BD -->
+        <!-- Atualiza a estrutura da BD -->
         <property name="hibernate.hbm2ddl.auto">
             update
         </property>

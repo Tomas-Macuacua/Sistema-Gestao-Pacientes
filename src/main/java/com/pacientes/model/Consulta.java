@@ -5,6 +5,8 @@
 package com.pacientes.model;
 
 import com.pacientes.enums.EstadoConsulta;
+import com.pacientes.exception.RegraNegocioException;
+import com.pacientes.exception.ValidacaoException;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -71,6 +73,32 @@ public class Consulta implements Descritivel{
 
     public EstadoConsulta getEstado() { return estado; }
     public void setEstado(EstadoConsulta estado) { this.estado = estado; }
+    
+    /**
+     * Regra: só se canela uma consulta que ainda está agendada.
+     */
+    public void cancelar() {
+        if (estado != EstadoConsulta.AGENDADA) {
+            throw new RegraNegocioException(
+                    "Só é possível cancelar consultas agendadas (estado actual: " + estado + ").");
+        }
+        estado = EstadoConsulta.CANCELADA;
+    }
+    
+    /**
+     * Regra: só se realiza uma consulta agendada e com diagnóstico.
+     */
+    public void realizar(String diagnostico) {
+        if (estado != EstadoConsulta.AGENDADA) {
+            throw new RegraNegocioException(
+                    "Só é possível realizar consultas agendadas (estado actual: " + estado + ").");
+        }
+        if (diagnostico == null || diagnostico.isBlank()) {
+            throw new ValidacaoException("O diagnóstico é obrigatório para concluir a consulta.");
+        }
+        this.diagnostico = diagnostico.trim();
+        this.estado = EstadoConsulta.REALIZADA;
+    }
     
     @Override
     public String getResumo(){

@@ -6,7 +6,10 @@ package com.pacientes.controller;
 
 import com.pacientes.dao.IUtilizadorDAO;
 import com.pacientes.dao.UtilizadorDAO;
+import com.pacientes.exception.RegraNegocioException;
+import com.pacientes.exception.ValidacaoException;
 import com.pacientes.model.Utilizador;
+import com.pacientes.util.Validador;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,10 +26,17 @@ public class UtilizadorController {
     }
     
     public void cadastrar(Utilizador utilizador){
+        Validador.validarUtilizador(utilizador);
+        verificarUsernameUnico(utilizador);
         utilizadorDAO.salvar(utilizador);
     }
     
     public void atualizar(Utilizador utilizador){
+        if (utilizador == null || utilizador.getId() == null) {
+            throw new ValidacaoException("Seleccione um utilizador existente para actualizar.");
+        }
+        Validador.validarUtilizador(utilizador);
+        verificarUsernameUnico(utilizador);
         utilizadorDAO.atualizar(utilizador);
     }
     
@@ -44,5 +54,14 @@ public class UtilizadorController {
     
     public List<Utilizador> listar(){
         return utilizadorDAO.listarTodos();
+    }
+    
+    private void verificarUsernameUnico(Utilizador utilizador) {
+        String username = utilizador.getUsername().trim();
+        utilizadorDAO.buscarPorUsername(username).ifPresent(existente -> {
+            if (!existente.getId().equals(utilizador.getId())) {
+                throw new RegraNegocioException("O username '" + username + "' já está em uso.");
+            }
+        });
     }
 }
