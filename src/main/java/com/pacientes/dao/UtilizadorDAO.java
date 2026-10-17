@@ -4,6 +4,7 @@
  */
 package com.pacientes.dao;
 
+import com.pacientes.enums.Perfil;
 import com.pacientes.model.Utilizador;
 
 import java.util.Optional;
@@ -31,4 +32,16 @@ public class UtilizadorDAO extends GenericDAO<Utilizador> implements IUtilizador
         return consultarUnico(
             "FROM Utilizador u WHERE u.medico.id = ?1", medicoId);
     }
+    
+    @Override
+    public long contarTodos() {
+        return consultar("SELECT COUNT(u) FROM Utilizador u", Long.class).get(0);
+    }
+
+    @Override
+    public long contarAtivosPorPerfil(Perfil perfil) {
+        return consultar(
+                "SELECT COUNT(u) FROM Utilizador u WHERE u.perfil = ?1 AND u.ativo = true",
+                Long.class, perfil).get(0);
+    }    
 }
