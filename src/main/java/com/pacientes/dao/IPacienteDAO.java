@@ -9,15 +9,8 @@ import com.pacientes.model.Paciente;
 
 import java.util.List;
 
-public interface IPacienteDAO {
+public interface IPacienteDAO extends IGenericDAO<Paciente, Long> {
 
-    void salvar(Paciente paciente);
-
-    void atualizar(Paciente paciente);
-
-    void eliminar(Long id);
-
-    Paciente buscarPorId(Long id);
-
-    List<Paciente> listarTodos();
+    // Os métodos específicos de Paciente (pesquisa por nome, etc.)
+    // serão acrescentados aqui nos próximos passos.
 }

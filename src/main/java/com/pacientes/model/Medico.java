@@ -35,6 +35,11 @@ public class Medico extends Pessoa {
         return "Medico";
     }
     
+    @Override
+    public String getResumo(){
+        return "Dr(a)." + getNome() + " | " + especialidade + " | Ordem " + numeroOrdem;
+    }
+    
     public String getEspecialidade() { return especialidade; }
     public void setEspecialidade(String especialidade) { this.especialidade = especialidade; }
 

@@ -16,7 +16,7 @@ import java.time.Period;
 @Entity
 @Table(name = "pessoas")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class Pessoa {
+public abstract class Pessoa implements Descritivel{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -34,6 +34,13 @@ public class Paciente extends Pessoa {
         return "Paciente";
     }
     
+    @Override
+    public String getResumo(){
+        return getNome() + " | " + 
+                getIdade() + " anos | Processo " + numeroProcesso +
+                (grupoSanguineo != null? " | Grupo " + grupoSanguineo : "");
+    }
+    
     public String getNumeroProcesso() { return numeroProcesso; }
     public void setNumeroProcesso(String numeroProcesso) { this.numeroProcesso = numeroProcesso; }
 

@@ -7,6 +7,7 @@ package com.pacientes.model;
 import com.pacientes.enums.EstadoConsulta;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "consultas")
-public class Consulta {
+public class Consulta implements Descritivel{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,4 +71,12 @@ public class Consulta {
 
     public EstadoConsulta getEstado() { return estado; }
     public void setEstado(EstadoConsulta estado) { this.estado = estado; }
+    
+    @Override
+    public String getResumo(){
+        return "Consulta " + dataHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                + " | " + paciente.getNome()
+                + " com Dr(a). " + medico.getNome()
+                + " | " + estado;
+    }
 }

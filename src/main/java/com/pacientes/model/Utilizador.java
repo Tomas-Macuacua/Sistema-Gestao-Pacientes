@@ -13,7 +13,7 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "utilizadores")
-public class Utilizador {
+public class Utilizador implements Descritivel {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,6 +43,12 @@ public class Utilizador {
         this.username = username;
         this.senhaHash = senhaHash;
         this.perfil = perfil;
+    }
+    
+    @Override
+    public String getResumo(){
+        return "Utilizador " + username + " | Perfil " + perfil +
+                (ativo ? " | Activo" : " | Inactivo");
     }
     
     public Long getId() { return id; }
