@@ -10,6 +10,7 @@ import com.pacientes.dao.PacienteDAO;
 import com.pacientes.model.Paciente;
 
 import java.util.List;
+import java.util.Optional;
 
 public class PacienteController {
 
@@ -33,6 +34,14 @@ public class PacienteController {
 
     public Paciente buscar(Long id) {
         return pacienteDAO.buscarPorId(id);
+    }
+    
+    public Optional<Paciente> buscarPorNomeProcesso(String numeroProcesso){
+        return pacienteDAO.buscarPorNumeroProcesso(numeroProcesso);
+    }
+    
+    public List<Paciente> pesquisarPorNome(String nome){
+        return pacienteDAO.pesquisarPorNome(nome);
     }
 
     public List<Paciente> listar() {

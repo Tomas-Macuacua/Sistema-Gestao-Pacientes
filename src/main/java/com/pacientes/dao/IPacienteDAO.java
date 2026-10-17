@@ -8,9 +8,11 @@ package com.pacientes.dao;
 import com.pacientes.model.Paciente;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IPacienteDAO extends IGenericDAO<Paciente, Long> {
 
-    // Os métodos específicos de Paciente (pesquisa por nome, etc.)
-    // serão acrescentados aqui nos próximos passos.
+    Optional<Paciente> buscarPorNumeroProcesso(String numeroProcesso);
+    
+    List<Paciente> pesquisarPorNome(String nome);
 }
